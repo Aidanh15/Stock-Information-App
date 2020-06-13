@@ -35,7 +35,13 @@ st.line_chart(tickerDf.Volume)
 st.write("""
 ## Business Information:
 """)
-st.write(tickerData.info["longBusinessSummary"])
+
+
+try:
+    st.write(tickerData.info["longBusinessSummary"])
+except:
+    st.write("*No Business Description provided*")
+
 st.write('## Value of company: ')
 st.write('$'+str(tickerData.info["enterpriseValue"]))
 
