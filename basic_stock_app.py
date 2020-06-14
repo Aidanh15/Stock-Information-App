@@ -45,9 +45,9 @@ first_value = tickerDf_year.Close.iloc[0]
 last_value = tickerDf_year.Close.iloc[-1]
 change = (last_value - first_value)/first_value
 if change > 0:
-   st.write("This stock was up {:.2f}".format(change)+ '% at close today')
+   st.write("This stock was up **{:.2f}".format(change)+ '%** at close today')
 elif change < 0:
-   st.write("This stock was down {:.2f}".format(change)+ '% at close today')
+   st.write("This stock was down **{:.2f}".format(change)+ '%** at close today')
 
 
 
