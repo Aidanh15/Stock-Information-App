@@ -30,8 +30,11 @@ spydata = yf.Ticker(sp500)
 tickerDf = tickerData.history(period='1d', start='2000-6-13', end=str(current_date))
 spydf = spydata.history(period='1d', start='2000-6-13', end=str(current_date))
 
-tickerDf_day = tickerData.history(period='1d', start = (datetime.now() - timedelta(1)).strftime('%Y-%m-%d'), end=str(current_date))
-spydf_day = spydata.history(period='1d', start = (datetime.now() - timedelta(1)).strftime('%Y-%m-%d'), end=str(current_date))
+tickerDf_week= tickerData.history(period='1d', start = (datetime.now() - timedelta(days=8)), end=str(current_date))
+spydf_week = spydata.history(period='1d', start = (datetime.now() - timedelta(days=8)), end=str(current_date))
+print(tickerDf_week)
+TEST = (datetime.now() - timedelta(days=7))
+print(TEST)
 
 tickerDf_year = tickerData.history(period='1d', start='2020-1-01', end=str(current_date))
 spydf_year = spydata.history(period='1d', start='2020-1-01', end=str(current_date))
@@ -40,14 +43,23 @@ st.write("""
 ## Closing Price
 """)
 st.line_chart(tickerDf.Close)
-
+# Yearly change (for beat the market section)
 first_value = tickerDf_year.Close.iloc[0]
 last_value = tickerDf_year.Close.iloc[-1]
 change = (last_value - first_value)/first_value
-if change > 0:
-   st.write("This stock was up **{:.2f}".format(change)+ '%** at close today')
-elif change < 0:
-   st.write("This stock was down **{:.2f}".format(change)+ '%** at close today')
+
+#Daily change(for below section)
+first_value_week = tickerDf_week.Close.iloc[0]
+last_value_week = tickerDf_week.Close.iloc[-1]
+change_week = (last_value_week - first_value_week)/first_value_week
+
+
+if change_week > 0:
+   st.write("This stock is up **{:.2f}".format(change_week*100)+ '%** this week')
+elif change_week < 0:
+   st.write("This stock is down **{:.2f}".format(change_week*100)+ '%** this week')
+
+st.button('year') 
 
 
 
