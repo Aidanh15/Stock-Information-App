@@ -11,7 +11,7 @@ from io import BytesIO
 
 
 current_date = datetime.now().date()
-print(current_date)
+
 
 st.write("""
 # Simple Stock Information App 
@@ -31,15 +31,23 @@ tickerDf = tickerData.history(period='1d', start='2000-6-13', end=str(current_da
 spydf = spydata.history(period='1d', start='2000-6-13', end=str(current_date))
 
 # Prices for today less 1 week
-tickerDf_week= tickerData.history(period='1d', start = (datetime.now() - timedelta(days=7)), end=str(current_date))
-spydf_week = spydata.history(period='1d', start = (datetime.now() - timedelta(days=7)), end=str(current_date))
-
+tickerDf_week= tickerData.history(period='5d', interval='1m')
+spydf_week = spydata.history(period='5d', interval='1m')
 #Prices from start of year til today
 tickerDf_year = tickerData.history(period='1d', start='2020-1-01', end=str(current_date))
 spydf_year = spydata.history(period='1d', start='2020-1-01', end=str(current_date))
 
+#prices for today
+tickerDf_day = tickerData.history(period='1d', start = (datetime.now() - timedelta(days=1)), end=datetime.now())
+tickerDf_day_chart = tickerData.history( period= '1d', interval='1m')# Only way to overcome unusual plotting bug when using original var above
+spydf_day = spydata.history(period='24h')
 
 
+
+#All time change
+first_value_AT = tickerDf.Close.iloc[0]
+last_value_AT = tickerDf.Close.iloc[-1]
+change_AT = (((last_value_AT - first_value_AT)/first_value_AT)*100)
 # Yearly change (for beat the market section)
 first_value = tickerDf_year.Close.iloc[0]
 last_value = tickerDf_year.Close.iloc[-1]
@@ -48,12 +56,15 @@ change = (last_value - first_value)/first_value
 first_value_week = tickerDf_week.Close.iloc[0]
 last_value_week = tickerDf_week.Close.iloc[-1]
 change_week = (last_value_week - first_value_week)/first_value_week
-#All time change
-first_value_AT = tickerDf.Close.iloc[0]
-last_value_AT = tickerDf.Close.iloc[-1]
-change_AT = (((last_value_AT - first_value_AT)/first_value_AT)*100)
-print(first_value_AT)
-print(last_value_AT)
+# Daily Change
+first_value_day = tickerDf_day.Open.iloc[0]
+last_value_day = tickerDf_day.Close.iloc[0]
+change_day = (((last_value_day-first_value_day)/first_value_day)*100)
+
+
+
+
+
 
 #Display closing price graph
 st.write("""
@@ -62,24 +73,36 @@ st.write("""
 st.subheader("All Time")
 st.line_chart(tickerDf.Close)
 if change_AT>0:
-     st.write("This stock is up **{:.2f}".format(change_AT)+ '%** all time')
+     st.write(ticker + " is up **{:.2f}".format(change_AT)+ '%** all time')
 elif change_AT<0:
-    st.write("This stock is down **{:.2f}".format(change_AT)+ '%** all time')
+    st.write(ticker + " is down **{:.2f}".format(change_AT)+ '%** all time')
 
 if st.checkbox("View Year"):
-    st.line_chart(tickerDf_year)
+    st.line_chart(tickerDf_year.Close)
     if change > 0:
-        st.write("This stock is up **{:.2f}".format(change*100)+ '%** this year')
+        st.write(ticker + " is up **{:.2f}".format(change*100)+ '%** this year')
     elif change < 0:
-        st.write("This stock is down **{:.2f}".format(change*100)+ '%** this year')
+        st.write(ticker + " is down **{:.2f}".format(change*100)+ '%** this year')
 
 if st.checkbox("View Week"):
-    st.line_chart(tickerDf_week.Close)
+    perf_graph_week = make_subplots(specs=[[{"secondary_y": True}]])
+    perf_graph_week.add_trace(go.Scatter(x=tickerDf_week.index, y=tickerDf_week.Close,  mode='lines', name = 'Your Stock'), secondary_y=False)
+    # Display Graph
+    st.plotly_chart(perf_graph_week)
     if change_week > 0:
-        st.write("This stock is up **{:.2f}".format(change_week*100)+ '%** this week')
+        st.write(ticker + " is up **{:.2f}".format(change_week*100)+ '%** this trading week')
     elif change_week < 0:
-        st.write("This stock is down **{:.2f}".format(change_week*100)+ '%** this week')
+        st.write(ticker + " is down **{:.2f}".format(change_week*100)+ '%** this trading week')
 
+if st.checkbox("View Day"):
+    perf_graph2 = make_subplots(specs=[[{"secondary_y": True}]])
+    perf_graph2.add_trace(go.Scatter(x=tickerDf_day_chart.index, y=tickerDf_day_chart.Close,  mode='lines', name = 'Your Stock'), secondary_y=False)
+    # Display Graph
+    st.plotly_chart(perf_graph2)
+    if change_day > 0:
+        st.write(ticker + " is up **{:.2f}".format(change_day)+ '%** today')
+    elif change_day < 0:
+        st.write(ticker + " is down **{:.2f}".format(change_day)+ '%** today')
 
 
 
@@ -107,8 +130,8 @@ perf_graph.add_trace(go.Scatter(x=tickerDf_year.index, y=tickerDf_year.Close, mo
 st.plotly_chart(perf_graph)
 
 # Display % change
-st.write("**S&P's performance:** {:2f} ".format(sp_perf))
-st.write("**"+ ticker + "'s performance:** {:2f} ".format(change))
+st.write("**S&P's performance:** {:2f}% ".format(sp_perf*100))
+st.write("**"+ ticker + "'s performance:** {:2f}% ".format(change*100))
 
 
 st.write("""
@@ -121,11 +144,15 @@ try:
 except:
     st.write("*No Business Description provided*")
 
-st.write('## Value of company: ')
-st.write('$'+str(tickerData.info["enterpriseValue"]))
 
-st.write('## Market Cap: ')
-st.write('$'+str(tickerData.info["marketCap"]))
+try:
+    st.write('## Value of company: ')
+    st.write('$'+str(tickerData.info["enterpriseValue"]))
+
+    st.write('## Market Cap: ')
+    st.write('$'+str(tickerData.info["marketCap"]))
+except:
+    st.write("Data not Provided")
 
 try:
     logo = tickerData.info["logo_url"]
