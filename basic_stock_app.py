@@ -30,36 +30,56 @@ spydata = yf.Ticker(sp500)
 tickerDf = tickerData.history(period='1d', start='2000-6-13', end=str(current_date))
 spydf = spydata.history(period='1d', start='2000-6-13', end=str(current_date))
 
-tickerDf_week= tickerData.history(period='1d', start = (datetime.now() - timedelta(days=8)), end=str(current_date))
-spydf_week = spydata.history(period='1d', start = (datetime.now() - timedelta(days=8)), end=str(current_date))
-print(tickerDf_week)
-TEST = (datetime.now() - timedelta(days=7))
-print(TEST)
+# Prices for today less 1 week
+tickerDf_week= tickerData.history(period='1d', start = (datetime.now() - timedelta(days=7)), end=str(current_date))
+spydf_week = spydata.history(period='1d', start = (datetime.now() - timedelta(days=7)), end=str(current_date))
 
+#Prices from start of year til today
 tickerDf_year = tickerData.history(period='1d', start='2020-1-01', end=str(current_date))
 spydf_year = spydata.history(period='1d', start='2020-1-01', end=str(current_date))
 
-st.write("""
-## Closing Price
-""")
-st.line_chart(tickerDf.Close)
+
+
 # Yearly change (for beat the market section)
 first_value = tickerDf_year.Close.iloc[0]
 last_value = tickerDf_year.Close.iloc[-1]
 change = (last_value - first_value)/first_value
-
-#Daily change(for below section)
+#Weekly change 
 first_value_week = tickerDf_week.Close.iloc[0]
 last_value_week = tickerDf_week.Close.iloc[-1]
 change_week = (last_value_week - first_value_week)/first_value_week
+#All time change
+first_value_AT = tickerDf.Close.iloc[0]
+last_value_AT = tickerDf.Close.iloc[-1]
+change_AT = (((last_value_AT - first_value_AT)/first_value_AT)*100)
+print(first_value_AT)
+print(last_value_AT)
 
+#Display closing price graph
+st.write("""
+## Closing Price
+""")
+st.subheader("All Time")
+st.line_chart(tickerDf.Close)
+if change_AT>0:
+     st.write("This stock is up **{:.2f}".format(change_AT)+ '%** all time')
+elif change_AT<0:
+    st.write("This stock is down **{:.2f}".format(change_AT)+ '%** all time')
 
-if change_week > 0:
-   st.write("This stock is up **{:.2f}".format(change_week*100)+ '%** this week')
-elif change_week < 0:
-   st.write("This stock is down **{:.2f}".format(change_week*100)+ '%** this week')
+if st.checkbox("View Year"):
+    st.line_chart(tickerDf_year)
+    if change > 0:
+        st.write("This stock is up **{:.2f}".format(change*100)+ '%** this year')
+    elif change < 0:
+        st.write("This stock is down **{:.2f}".format(change*100)+ '%** this year')
 
-st.button('year') 
+if st.checkbox("View Week"):
+    st.line_chart(tickerDf_week.Close)
+    if change_week > 0:
+        st.write("This stock is up **{:.2f}".format(change_week*100)+ '%** this week')
+    elif change_week < 0:
+        st.write("This stock is down **{:.2f}".format(change_week*100)+ '%** this week')
+
 
 
 
