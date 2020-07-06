@@ -56,10 +56,15 @@ change = (last_value - first_value)/first_value
 first_value_week = tickerDf_week.Close.iloc[0]
 last_value_week = tickerDf_week.Close.iloc[-1]
 change_week = (last_value_week - first_value_week)/first_value_week
-# Daily Change
-first_value_day = tickerDf_day.Open.iloc[0]
-last_value_day = tickerDf_day.Close.iloc[0]
-change_day = (((last_value_day-first_value_day)/first_value_day)*100)
+try:
+    # Daily Change
+    first_value_day = tickerDf_day.Open.iloc[0]
+    last_value_day = tickerDf_day.Close.iloc[0]
+    change_day = (((last_value_day-first_value_day)/first_value_day)*100)
+except:
+    print("Market - closed: No daily data available")
+    st.subheader("Market - closed: No daily data available")
+
 
 
 
